@@ -2,13 +2,12 @@ from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 
 from .authorizers import AuthorizerType, ADAuthorizer, CognitoAuthorizer
-from .middlewares import OAuthGenerator, OAuthVerifier
+from .middlewares import OAuthVerifier
 
 
 def init_app(app: FastAPI, config: dict) -> None:
     authorizer = get_authorizer(config["authorizer"])
 
-    app.add_middleware(OAuthGenerator, authorizer=authorizer, routes=config["generator_routes"])
     app.add_middleware(OAuthVerifier, authorizer=authorizer, routes=config["verifier_routes"])
 
     for i in range(len(app.user_middleware)):
