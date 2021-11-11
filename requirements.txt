@@ -1,3 +1,4 @@
-fastapi
-python-jose
-requests
+fastapi==0.70.0
+itsdangerous[cryptography]==2.0.1
+python-jose==3.3.0
+requests==2.26.0
