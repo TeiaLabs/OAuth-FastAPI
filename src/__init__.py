@@ -5,6 +5,12 @@ from .authorizers import AuthorizerType, ADAuthorizer, CognitoAuthorizer
 from .middlewares import OAuthVerifier
 
 
+AUTHORIZERS = {
+    'azure': ADAuthorizer,
+    'aws': CognitoAuthorizer
+}
+
+
 def init_app(app: FastAPI, config: dict) -> None:
     authorizer = get_authorizer(config["authorizer"])
 
@@ -20,8 +26,9 @@ def init_app(app: FastAPI, config: dict) -> None:
 
 
 def get_authorizer(config: dict) -> AuthorizerType:
-    if config["type"] == "Azure":
-        return ADAuthorizer(**config["config"])
-    elif config["type"] == "Amazon":
-        return CognitoAuthorizer(**config["config"])
-    raise ValueError("Unkown authorizer type. Choose one of:\n\t->Azure\n\t->Amazon")
+    auth_type = config["type"].lower()
+    if auth_type not in AUTHORIZERS.keys():
+        allowed_authorizers = '\n\t->'.join(AUTHORIZERS.keys())
+        raise ValueError(f"Unknown authorizer type. Choose one of: {allowed_authorizers}")
+
+    return AUTHORIZERS[auth_type](**config["config"])
