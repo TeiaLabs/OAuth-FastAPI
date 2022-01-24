@@ -29,21 +29,21 @@ class CognitoAuthorizer(Authorizer):
         self.token_validator = token_validator
 
     def validate_access_token(self, token: str) -> Tuple[bool, str]:
-        is_valid, resp = self._verify_signing_key(token)
+        is_valid, resp = self.verify_signing_key(token)
         if not is_valid:
             return False, resp
 
-        is_valid, resp = self._verify_claims(token)
+        is_valid, resp = self.verify_claims(token)
         if not is_valid:
             return False, resp
 
         return self.token_validator(resp)
 
-    def _verify_signing_key(self, token):
+    def verify_signing_key(self, token):
         try:
             message, encoded_signature = str(token).rsplit(".", 1)
 
-            key = self._get_signing_key(token)
+            key = self.get_signing_key(token)
             if key is None:
                 return False, "Token is not valid"
 
@@ -62,7 +62,7 @@ class CognitoAuthorizer(Authorizer):
         except (Error, ValueError, IndexError):
             return False, "Token is not valid"
 
-    def _verify_claims(self, token):
+    def verify_claims(self, token):
         claims = jwt.get_unverified_claims(token)
         if time.time() > claims["exp"]:
             return False, "Token is expired"
@@ -82,7 +82,7 @@ class CognitoAuthorizer(Authorizer):
 
         return False, "Token is not valid"
 
-    def _get_signing_key(self, token):
+    def get_signing_key(self, token):
         headers = jwt.get_unverified_headers(token)
         kid = headers["kid"]
 

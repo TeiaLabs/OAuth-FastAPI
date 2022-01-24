@@ -24,16 +24,16 @@ class ADAuthorizer(Authorizer):
         self.address = f"https://login.microsoftonline.com/{self.tenant}/discovery/keys"
 
     def validate_access_token(self, token: str) -> Tuple[bool, str]:
-        if not self._verify_signing_key(token):
+        if not self.verify_signing_key(token):
             return False, ""
 
-        if not self._verify_claims(token):
+        if not self.verify_claims(token):
             return False, ""
 
         return True, ""
 
-    def _verify_signing_key(self, token):
-        key = self._get_signing_key(token)
+    def verify_signing_key(self, token):
+        key = self.get_signing_key(token)
 
         public_key = jwk.construct(key)
         message, encoded_signature = str(token).rsplit('.', 1)
@@ -44,7 +44,7 @@ class ADAuthorizer(Authorizer):
 
         return True
 
-    def _verify_claims(self, token):
+    def verify_claims(self, token):
         claims = jwt.get_unverified_claims(token)
         if time.time() > claims['exp']:
             return False
@@ -54,7 +54,7 @@ class ADAuthorizer(Authorizer):
 
         return True
 
-    def _get_signing_key(self, token):
+    def get_signing_key(self, token):
         headers = jwt.get_unverified_headers(token)
         kid = headers["kid"]
 

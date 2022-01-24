@@ -1,4 +1,5 @@
 import abc
+from typing import Optional
 from typing import Tuple
 
 
@@ -20,4 +21,16 @@ class Authorizer(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def validate_access_token(self, token: str) -> Tuple[bool, str]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def verify_signing_key(self, token) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def verify_claims(self, token) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_signing_key(self, token) -> Optional[str]:
         raise NotImplementedError
