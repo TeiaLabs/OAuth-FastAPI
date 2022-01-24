@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 
-from src import init_app
+from oauth_middleware import init_app
 
 app = FastAPI()
 
