@@ -1,4 +1,5 @@
 import time
+from typing import Callable
 from typing import Tuple
 
 import requests
@@ -16,12 +17,16 @@ def get_alg_key(kty):
 
 
 class ADAuthorizer(Authorizer):
-    def __init__(self, app_client_id, tenant, token_validator=None):
+    def __init__(
+            self,
+            tenant: str,
+            app_client_id: str = "",
+            token_validator: Callable = lambda _: (True, '')
+    ):
         self.app_client_id = app_client_id
-        self.tenant = tenant
-        self.token_validator = token_validator if token_validator else lambda _: True
+        self.token_validator = token_validator
 
-        self.address = f"https://login.microsoftonline.com/{self.tenant}/discovery/keys"
+        self.address = f"https://login.microsoftonline.com/{tenant}/discovery/keys"
 
     def validate_access_token(self, token: str) -> Tuple[bool, str]:
         if not self.verify_signing_key(token):
@@ -52,7 +57,7 @@ class ADAuthorizer(Authorizer):
         if claims['aud'] != self.app_client_id:
             return False
 
-        return True
+        return self.token_validator(token)
 
     def get_signing_key(self, token):
         headers = jwt.get_unverified_headers(token)

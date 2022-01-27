@@ -15,15 +15,16 @@ from ..utils import timed_cache
 
 
 class CognitoAuthorizer(Authorizer):
-    def __init__(self,
-                 region: str,
-                 user_pool: str,
-                 app_client_id: str = "",
-                 token_type: str = "",
-                 token_validator: Callable = lambda _: (True, '')):
+    def __init__(
+            self,
+            region: str,
+            user_pool: str,
+            app_client_id: str = "",
+            token_type: str = "",
+            token_validator: Callable = lambda _: (True, '')
+    ):
         self.issuer = f"https://cognito-idp.{region}.amazonaws.com/{user_pool}"
         self.jwk_address = f"{self.issuer}/.well-known/jwks.json"
-        self.user_pool = user_pool
         self.app_client_id = app_client_id
         self.token_type = token_type
         self.token_validator = token_validator
