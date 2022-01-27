@@ -20,7 +20,7 @@ class Authorizer(metaclass=abc.ABCMeta):
     ]
 
     @abc.abstractmethod
-    def validate_access_token(self, token: str) -> Tuple[bool, str]:
+    def validate_token(self, token: str) -> Tuple[bool, str]:
         raise NotImplementedError
 
     @abc.abstractmethod

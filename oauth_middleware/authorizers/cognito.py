@@ -21,7 +21,7 @@ class CognitoAuthorizer(Authorizer):
             user_pool: str,
             app_client_id: str = "",
             token_type: str = "",
-            token_validator: Callable = lambda _: (True, '')
+            token_validator: Callable = lambda _: (True, "")
     ):
         self.issuer = f"https://cognito-idp.{region}.amazonaws.com/{user_pool}"
         self.jwk_address = f"{self.issuer}/.well-known/jwks.json"
@@ -29,7 +29,7 @@ class CognitoAuthorizer(Authorizer):
         self.token_type = token_type
         self.token_validator = token_validator
 
-    def validate_access_token(self, token: str) -> Tuple[bool, str]:
+    def validate_token(self, token: str) -> Tuple[bool, str]:
         is_valid, resp = self.verify_signing_key(token)
         if not is_valid:
             return False, resp
@@ -38,7 +38,7 @@ class CognitoAuthorizer(Authorizer):
         if not is_valid:
             return False, resp
 
-        return self.token_validator(resp)
+        return self.token_validator(token)
 
     def verify_signing_key(self, token):
         try:
@@ -79,7 +79,7 @@ class CognitoAuthorizer(Authorizer):
 
         for group in claims["cognito:groups"]:
             if group.startswith(self.app_client_id):
-                return True, claims
+                return True, ""
 
         return False, "Token is not valid"
 

@@ -1,11 +1,14 @@
 import time
+from binascii import Error
 from typing import Callable
 from typing import Tuple
 
 import requests
 from jose import jwk
 from jose import jwt
+from jose.exceptions import JWKError
 from jose.utils import base64url_decode
+from requests.exceptions import BaseHTTPError
 
 from .authorizer import Authorizer
 from ..utils.cache import timed_cache
@@ -21,41 +24,52 @@ class ADAuthorizer(Authorizer):
             self,
             tenant: str,
             app_client_id: str = "",
-            token_validator: Callable = lambda _: (True, '')
+            token_validator: Callable = lambda _: (True, "")
     ):
         self.app_client_id = app_client_id
         self.token_validator = token_validator
-
         self.address = f"https://login.microsoftonline.com/{tenant}/discovery/keys"
 
-    def validate_access_token(self, token: str) -> Tuple[bool, str]:
-        if not self.verify_signing_key(token):
-            return False, ""
+    def validate_token(self, token: str) -> Tuple[bool, str]:
+        is_valid, resp = self.verify_signing_key(token)
+        if not is_valid:
+            return False, resp
 
-        if not self.verify_claims(token):
-            return False, ""
+        is_valid, resp = self.verify_claims(token)
+        if not is_valid:
+            return False, resp
 
-        return True, ""
+        return self.token_validator(token)
 
     def verify_signing_key(self, token):
-        key = self.get_signing_key(token)
+        try:
+            key = self.get_signing_key(token)
+            if key is None:
+                return False, "Token is not valid"
 
-        public_key = jwk.construct(key)
-        message, encoded_signature = str(token).rsplit('.', 1)
-        decoded_signature = base64url_decode(encoded_signature.encode('utf-8'))
+            public_key = jwk.construct(key)
+            message, encoded_signature = str(token).rsplit('.', 1)
+            decoded_signature = base64url_decode(encoded_signature.encode('utf-8'))
 
-        if not public_key.verify(message.encode("utf8"), decoded_signature):
-            return False
+            if not public_key.verify(message.encode("utf8"), decoded_signature):
+                return False, "Token is not valid"
 
-        return True
+            return True, ""
+
+        except BaseHTTPError:
+            return False, "Failed to recover server keys"
+        except JWKError:
+            return False, "Server key is not valid"
+        except (Error, ValueError, IndexError):
+            return False, "Token is not valid"
 
     def verify_claims(self, token):
         claims = jwt.get_unverified_claims(token)
         if time.time() > claims['exp']:
-            return False
+            return False, "Token is expired"
 
         if claims['aud'] != self.app_client_id:
-            return False
+            return False, "Token is not valid"
 
         return self.token_validator(token)
 
