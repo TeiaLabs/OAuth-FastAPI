@@ -19,12 +19,13 @@ class CognitoAuthorizer(Authorizer):
             self,
             region: str,
             user_pool: str,
-            app_client_id: str = "",
-            token_type: str = "",
+            app_client_id: str,
+            token_type: str,
             token_validator: Callable = lambda _: (True, "")
     ):
         self.issuer = f"https://cognito-idp.{region}.amazonaws.com/{user_pool}"
         self.jwk_address = f"{self.issuer}/.well-known/jwks.json"
+        self.user_pool_id = user_pool
         self.app_client_id = app_client_id
         self.token_type = token_type
         self.token_validator = token_validator
@@ -78,7 +79,7 @@ class CognitoAuthorizer(Authorizer):
             return False, "Token is not valid"
 
         for group in claims["cognito:groups"]:
-            if group.startswith(self.app_client_id):
+            if group.startswith(self.user_pool_id):
                 return True, ""
 
         return False, "Token is not valid"
