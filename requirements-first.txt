@@ -1,0 +1,2 @@
+async-client @ git+ssh://git@github.com/TeiaLabs/Async-Client.git@master
+timed_dict @ git@github.com:TeiaLabs/TimedDict.git@master

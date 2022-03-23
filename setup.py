@@ -15,6 +15,7 @@ with open("README.md", "r") as readme_file:
     long_description = readme_file.read()
 
 requirements = read_multiline_as_list("requirements.txt")
+requirements_first = read_multiline_as_list("requirements-first.txt")
 
 setuptools.setup(
     name="oauth-middleware",
@@ -29,4 +30,7 @@ setuptools.setup(
     keywords='fastapi middleware oauth cognito ad active directory',
     python_requires=">=3.7",
     install_requires=requirements,
+    extra_requires={
+        "first": requirements_first
+    }
 )

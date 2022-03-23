@@ -1,1 +1,2 @@
-from .oauth_verifier import OAuthVerifier
+from .master import MasterOAuthVerifier
+from .slave import SlaveOAuthVerifier
