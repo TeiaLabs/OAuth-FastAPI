@@ -91,8 +91,7 @@ class LoginMiddleware:
 
         return authenticator, authorizer
 
-    @staticmethod
-    async def save_user(authorizer, body, claims):
+    async def save_user(self, authorizer, body, claims):
         raise NotImplementedError
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send):
