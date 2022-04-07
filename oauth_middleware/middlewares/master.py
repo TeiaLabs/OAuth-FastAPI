@@ -81,7 +81,7 @@ class MasterOAuthVerifier:
 
         secret_header = request.headers.get("secret")
         if secret_header is not None and secret_header == self.secret:
-            user_key = request.headers.get("authentication")
+            user_key = request.headers.get("authorization")
         else:
             user_key = request.session.get("user")
 
