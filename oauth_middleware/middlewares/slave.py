@@ -1,4 +1,5 @@
 import time
+from typing import List
 
 from fastapi import FastAPI
 from fastapi import Request
@@ -18,11 +19,17 @@ from ..utils.constants import TOKEN_EXPIRED
 
 
 class SlaveOAuthVerifier:
-    def __init__(self, app: FastAPI, master_url: str, secret: str, users: TimedDict):
+    def __init__(self,
+                 app: FastAPI,
+                 master_url: str,
+                 secret: str,
+                 users: TimedDict,
+                 ignored_paths: List[str]):
         self.app = app
         self.master_url = master_url
         self.secret = secret
         self.users = users
+        self.ignored_paths = ignored_paths
 
     async def get_user_info(self, request, ):
         user_key = request.session.get("user")
@@ -45,6 +52,10 @@ class SlaveOAuthVerifier:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send):
         if scope["type"] == "lifespan":
+            return await self.app(scope, receive, send)
+
+        path = scope["path"][scope["path"].find("/"):]
+        if path in self.ignored_paths:
             return await self.app(scope, receive, send)
 
         request = Request(scope=scope, receive=receive, send=send)

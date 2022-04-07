@@ -1,4 +1,5 @@
 import time
+from typing import List
 
 from fastapi import FastAPI
 from fastapi.responses import UJSONResponse
@@ -17,10 +18,15 @@ from ..utils.constants import USER_NOT_AUTHENTICATED
 
 
 class MasterOAuthVerifier:
-    def __init__(self, app: FastAPI, secret: str, users: TimedDict):
+    def __init__(self,
+                 app: FastAPI,
+                 secret: str,
+                 users: TimedDict,
+                 ignored_paths: List[str]):
         self.app = app
         self.secret = secret
         self.users = users
+        self.ignored_paths = set(ignored_paths)
 
     async def process_user_info_request(
             self, scope: Scope, receive: Receive, send: Send, key: str
@@ -64,9 +70,12 @@ class MasterOAuthVerifier:
         if scope["type"] == "lifespan":
             return await self.app(scope, receive, send)
 
-        paths = scope["path"].split("/")
-        if paths[-2] == "user_info":
-            return await self.process_user_info_request(scope, receive, send, paths[-1])
+        path = scope["path"][scope["path"].find("/"):]
+        if path in self.ignored_paths:
+            return await self.app(scope, receive, send)
+
+        if "user_info" in path:
+            return await self.process_user_info_request(scope, receive, send, path.split("/")[-1])
 
         request = Request(scope=scope, receive=receive, send=send)
 
