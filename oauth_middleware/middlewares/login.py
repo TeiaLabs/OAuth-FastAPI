@@ -44,7 +44,7 @@ class LoginMiddleware:
             )
 
         headers = request.headers
-        token = headers.get("authentication")
+        token = headers.get("authorization")
         is_valid, msg = authorizer.validate_token(token)
         if not is_valid:
             return await build_response(scope, receive, send, 400, msg)
