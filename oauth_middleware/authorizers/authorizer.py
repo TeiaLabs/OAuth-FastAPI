@@ -1,6 +1,5 @@
 import abc
-from typing import Optional
-from typing import Tuple
+from typing import Optional, Tuple
 
 
 class Authorizer(metaclass=abc.ABCMeta):
@@ -16,7 +15,7 @@ class Authorizer(metaclass=abc.ABCMeta):
         "ES512",
         "PS256",
         "PS384",
-        "PS512"
+        "PS512",
     ]
 
     @abc.abstractmethod

@@ -1,25 +1,21 @@
 import secrets
-from typing import Optional
-from typing import Tuple
+from typing import Optional, Tuple
 
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.responses import UJSONResponse
 from jose import jwt
-from starlette.types import Receive
-from starlette.types import Scope
-from starlette.types import Send
-
+from starlette.types import Receive, Scope, Send
 from timed_dict import TimedDict
 
-from ..authorizers import ADAuthorizer
-from ..authorizers import AuthorizerType
-from ..authorizers import CognitoAuthorizer
-from ..utils import build_response
+from ..authorizers import ADAuthorizer, AuthorizerType, CognitoAuthorizer
 from ..utils import MasterUserInfo as UserInfo
-from ..utils.constants import AUTHENTICATOR_NOT_PROVIDED
-from ..utils.constants import METHOD_NOT_ALLOWED
-from ..utils.constants import UNKNOWN_AUTHENTICATOR
+from ..utils import build_response
+from ..utils.constants import (
+    AUTHENTICATOR_NOT_PROVIDED,
+    METHOD_NOT_ALLOWED,
+    UNKNOWN_AUTHENTICATOR,
+)
 
 
 class LoginMiddleware:
@@ -30,18 +26,17 @@ class LoginMiddleware:
 
     async def logon(self, scope: Scope, receive: Receive, send: Send):
         if scope["method"] != "POST":
-            return await build_response(
+            res = await build_response(
                 scope, receive, send, 405, METHOD_NOT_ALLOWED
             )
+            return res
 
         request = Request(scope=scope, receive=receive, send=send)
         body = await request.json()
 
         resp, authorizer = await self.get_authorizer(body)
         if authorizer is None:
-            return await build_response(
-                scope, receive, send, 400, resp
-            )
+            return await build_response(scope, receive, send, 400, resp)
 
         headers = request.headers
         token = headers.get("authorization")
@@ -72,7 +67,7 @@ class LoginMiddleware:
             authorizer_identifier=authorizer_identifier,
             expire_at=claims["exp"],
             scope=scope,
-            issuer=claims["iss"]
+            issuer=claims["iss"],
         )
 
     @staticmethod

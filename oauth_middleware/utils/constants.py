@@ -14,4 +14,7 @@ UNKNOWN_AUTHENTICATOR = "Unknown authenticator"
 __correct_token = "Okay, now send the correct token so we can proceed."
 SKYNET = "Hasta la vista, baby.\n" + __correct_token
 AUTOBOTS = "Autobots, Transform And Roll Out!\n" + __correct_token
-DECEPTICONS = "POWER FLOWS TO THE ONE WHO KNOWS HOW. DESIRE ALONE IS NOT ENOUGH.\n" + __correct_token
+DECEPTICONS = (
+    "POWER FLOWS TO THE ONE WHO KNOWS HOW. DESIRE ALONE IS NOT ENOUGH.\n"
+    + __correct_token
+)

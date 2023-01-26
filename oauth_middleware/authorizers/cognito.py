@@ -1,27 +1,25 @@
 import time
 from binascii import Error
-from typing import Callable
-from typing import Tuple
+from typing import Callable, Tuple
 
 import requests
-from jose import jwk
-from jose import jwt
+from jose import jwk, jwt
 from jose.exceptions import JWKError
 from jose.utils import base64url_decode
 from requests.exceptions import BaseHTTPError
 
-from .authorizer import Authorizer
 from ..utils import timed_cache
+from .authorizer import Authorizer
 
 
 class CognitoAuthorizer(Authorizer):
     def __init__(
-            self,
-            region: str,
-            user_pool: str,
-            app_client_id: str,
-            token_type: str,
-            token_validator: Callable = lambda _: (True, "")
+        self,
+        region: str,
+        user_pool: str,
+        app_client_id: str,
+        token_type: str,
+        token_validator: Callable = lambda _: (True, ""),
     ):
         self.issuer = f"https://cognito-idp.{region}.amazonaws.com/{user_pool}"
         self.jwk_address = f"{self.issuer}/.well-known/jwks.json"
@@ -50,9 +48,13 @@ class CognitoAuthorizer(Authorizer):
                 return False, "Token is not valid"
 
             public_key = jwk.construct(key)
-            decoded_signature = base64url_decode(encoded_signature.encode("utf-8"))
+            decoded_signature = base64url_decode(
+                encoded_signature.encode("utf-8")
+            )
 
-            if not public_key.verify(message.encode("utf8"), decoded_signature):
+            if not public_key.verify(
+                message.encode("utf8"), decoded_signature
+            ):
                 return False, "Token is not valid"
 
             return True, ""

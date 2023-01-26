@@ -1,17 +1,15 @@
 import time
 from binascii import Error
-from typing import Callable
-from typing import Tuple
+from typing import Callable, Tuple
 
 import requests
-from jose import jwk
-from jose import jwt
+from jose import jwk, jwt
 from jose.exceptions import JWKError
 from jose.utils import base64url_decode
 from requests.exceptions import BaseHTTPError
 
-from .authorizer import Authorizer
 from ..utils.cache import timed_cache
+from .authorizer import Authorizer
 
 
 def get_alg_key(kty):
@@ -21,14 +19,16 @@ def get_alg_key(kty):
 
 class ADAuthorizer(Authorizer):
     def __init__(
-            self,
-            tenant: str,
-            app_client_id: str = "",
-            token_validator: Callable = lambda _: (True, "")
+        self,
+        tenant: str,
+        app_client_id: str = "",
+        token_validator: Callable = lambda _: (True, ""),
     ):
         self.app_client_id = app_client_id
         self.token_validator = token_validator
-        self.address = f"https://login.microsoftonline.com/{tenant}/discovery/keys"
+        self.address = (
+            f"https://login.microsoftonline.com/{tenant}/discovery/keys"
+        )
 
     def validate_token(self, token: str) -> Tuple[bool, str]:
         is_valid, resp = self.verify_signing_key(token)
@@ -48,10 +48,14 @@ class ADAuthorizer(Authorizer):
                 return False, "Token is not valid"
 
             public_key = jwk.construct(key)
-            message, encoded_signature = str(token).rsplit('.', 1)
-            decoded_signature = base64url_decode(encoded_signature.encode('utf-8'))
+            message, encoded_signature = str(token).rsplit(".", 1)
+            decoded_signature = base64url_decode(
+                encoded_signature.encode("utf-8")
+            )
 
-            if not public_key.verify(message.encode("utf8"), decoded_signature):
+            if not public_key.verify(
+                message.encode("utf8"), decoded_signature
+            ):
                 return False, "Token is not valid"
 
             return True, ""
@@ -65,10 +69,10 @@ class ADAuthorizer(Authorizer):
 
     def verify_claims(self, token):
         claims = jwt.get_unverified_claims(token)
-        if time.time() > claims['exp']:
+        if time.time() > claims["exp"]:
             return False, "Token is expired"
 
-        if claims['aud'] != self.app_client_id:
+        if claims["aud"] != self.app_client_id:
             return False, "Token is not valid"
 
         return self.token_validator(token)
@@ -79,7 +83,7 @@ class ADAuthorizer(Authorizer):
 
         keys = self._get_keys()
         for key in keys["keys"]:
-            if key['kid'] == kid:
+            if key["kid"] == kid:
                 key["alg"] = get_alg_key(key["kty"])
                 return key
 

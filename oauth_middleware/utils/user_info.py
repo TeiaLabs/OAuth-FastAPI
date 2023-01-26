@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
-from typing import Dict
+from typing import Any, Dict
 
 
 @dataclass(frozen=True, eq=True)
@@ -13,7 +12,9 @@ class MasterUserInfo:
     user_id: str
 
     @classmethod
-    def from_claims(cls, key: str, user_id, claims: Dict[str, Any]) -> "MasterUserInfo":
+    def from_claims(
+        cls, key: str, user_id, claims: Dict[str, Any]
+    ) -> "MasterUserInfo":
         obj = cls(key=key, user_id=user_id, **claims)
         return obj
 
