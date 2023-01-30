@@ -1,8 +1,8 @@
 from typing import Any, Callable, Literal, Optional
-from fastapi import APIRouter as FastAPIRouter, Query, status
+from fastapi import APIRouter as FastAPIRouter, Query, status, Header
 
-from . import controller
-from .schemas import OAuth2Client, ID
+from . import controllers
+from .schemas import Authorization, ID, OAuth2Server
 
 
 class APIRouter(FastAPIRouter):
@@ -24,31 +24,51 @@ class APIRouter(FastAPIRouter):
         )
 
 
-router = APIRouter(prefix="/jobs")
+router = APIRouter()
 
 
 @router.post(
-    "/",
+    "/orgs/{identifier}/providers/",
     status_code=status.HTTP_201_CREATED,
 )
-async def create(data: OAuth2Client) -> ID:
-    return await controller.create(data)
+async def create(data: OAuth2Server) -> ID:
+    return await controllers.create(data)
 
 
 @router.get(
-    "/",
+    "/orgs/{identifier}/providers/",
     status_code=status.HTTP_200_OK,
 )
 async def read_many(
     limit: int = Query(10, ge=1, le=100),
     skip: int = Query(0, ge=0),
-) -> list[OAuth2Client]:
-    return await controller.read(limit, skip)
+) -> list[OAuth2Server]:
+    return await controllers.read_many(limit, skip)
 
 
 @router.delete(
-    "/{identifier}",
+    "/orgs/{org_id}/providers/{provider_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def delete_all(identifier: str) -> None:
-    return await controller.delete(filter={"identifier": identifier})
+async def delete_one(org_id: str, provider_id: str) -> None:
+    f = {"org": org_id, "provider": provider_id}
+    return await controllers.delete(filters=f)
+
+
+@router.post(
+    "/orgs/{org_id}/providers/{provider_id}/authorize",
+    status_code=status.HTTP_200_OK,
+)
+async def authorize(
+    org_id: str,
+    provider_id: str,
+    authorization: Optional[str] = Header(None),
+):
+    """
+    Validate authorization header against provider.
+
+    Return access token, refresh token, and expiration time.
+    """
+    f = {"org": org_id, "provider": provider_id}
+    auth_data = Authorization.from_jwt(authorization)
+    return await controllers.authorize(f, auth_data)
