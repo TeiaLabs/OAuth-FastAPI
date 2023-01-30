@@ -10,8 +10,7 @@ from . import authorizers
 
 def create_app():
     app = FastAPI(
-        title="TagSonic API",
-        description=description,
+        title="OAuth middleware microservice.",
         version="0.0.1",
         terms_of_service="http://www.teialabs.com/",
         contact={

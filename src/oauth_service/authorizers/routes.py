@@ -29,7 +29,26 @@ router = APIRouter(prefix="/jobs")
 
 @router.post(
     "/",
-    status_code=status.HTTP_202_ACCEPTED,
+    status_code=status.HTTP_201_CREATED,
 )
-async def inserts(data: OAuth2Client) -> ID:
-    return await controller.insert(data)
+async def create(data: OAuth2Client) -> ID:
+    return await controller.create(data)
+
+
+@router.get(
+    "/",
+    status_code=status.HTTP_200_OK,
+)
+async def read_many(
+    limit: int = Query(10, ge=1, le=100),
+    skip: int = Query(0, ge=0),
+) -> list[OAuth2Client]:
+    return await controller.read(limit, skip)
+
+
+@router.delete(
+    "/{identifier}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_all(identifier: str) -> None:
+    return await controller.delete(filter={"identifier": identifier})

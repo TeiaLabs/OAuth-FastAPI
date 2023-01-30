@@ -11,10 +11,20 @@ This repository contains a middleware compatible with FastAPI that provides OAut
 ### AD
 
 ```bash
-https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/authorize?
-client_id={value}
+https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/authorize
+?client_id={value}
 &response_type=token
 &redirect_uri=https://teialabs.com.br/
 &response_mode=fragment
 &scope=email+openid+profile
+```
+
+## AWS Cognito
+
+```bash
+htps://{user_pool}.auth.{region}.amazoncognito.com/login
+?client_id={value}
+&response_type=code
+&scope=email+openid+profile
+&redirect_uri=https://teialabs.com.br/
 ```
