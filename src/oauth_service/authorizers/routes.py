@@ -28,6 +28,25 @@ router = APIRouter()
 
 
 @router.post(
+    "/orgs/{org_id}/providers/{provider_id}/authorize",
+    status_code=status.HTTP_200_OK,
+)
+async def authorize(
+    org_id: str,
+    provider_id: str,
+    authorization: Optional[str] = Header(None),
+):
+    """
+    Validate authorization header against provider.
+
+    Return access token, refresh token, and expiration time.
+    """
+    f = {"org": org_id, "provider": provider_id}
+    auth_data = Authorization.from_jwt(authorization)
+    return await controllers.authorize(f, auth_data)
+
+
+@router.post(
     "/orgs/{identifier}/providers/",
     status_code=status.HTTP_201_CREATED,
 )
@@ -46,6 +65,17 @@ async def read_many(
     return await controllers.read_many(limit, skip)
 
 
+@router.get(
+    "/orgs/{org_id}/providers/{provider_id}",
+    status_code=status.HTTP_200_OK,
+)
+async def read_one(
+    org_id: str, provider_id: str
+) -> OAuth2Server:
+    f = {"org": org_id, "provider": provider_id}
+    return await controllers.read_one(filters=f)
+
+
 @router.delete(
     "/orgs/{org_id}/providers/{provider_id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -53,22 +83,3 @@ async def read_many(
 async def delete_one(org_id: str, provider_id: str) -> None:
     f = {"org": org_id, "provider": provider_id}
     return await controllers.delete(filters=f)
-
-
-@router.post(
-    "/orgs/{org_id}/providers/{provider_id}/authorize",
-    status_code=status.HTTP_200_OK,
-)
-async def authorize(
-    org_id: str,
-    provider_id: str,
-    authorization: Optional[str] = Header(None),
-):
-    """
-    Validate authorization header against provider.
-
-    Return access token, refresh token, and expiration time.
-    """
-    f = {"org": org_id, "provider": provider_id}
-    auth_data = Authorization.from_jwt(authorization)
-    return await controllers.authorize(f, auth_data)
